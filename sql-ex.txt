@@ -120,65 +120,96 @@ WHERE p1.speed = p2.speed AND p1.ram = p2.ram AND p1.model > p2.model
 Вывести: type, model, speed
 
 Ответ:
+SELECT DISTINCT product.type, laptop.model, laptop.speed 
+FROM product JOIN laptop ON product.model = laptop.model 
+WHERE laptop.speed < ALL (SELECT speed FROM pc)
 
 Задание18: Найдите производителей самых дешевых цветных принтеров. Вывести: maker, price
 
 Ответ:
+SELECT DISTINCT product.maker, printer.price 
+FROM product JOIN printer ON product.model = printer.model 
+WHERE printer.color = 'y' 
+AND printer.price = (SELECT MIN(price) FROM printer WHERE printer.color = 'y')
 
 Задание19: Для каждого производителя, имеющего модели в таблице Laptop, найдите средний размер экрана выпускаемых им ПК-блокнотов.
 Вывести: maker, средний размер экрана.
 
 Ответ:
+SELECT product.maker, AVG(laptop.screen) 
+FROM product JOIN laptop ON product.model = laptop.model 
+GROUP BY product.maker
 
 Задание20: Найдите производителей, выпускающих по меньшей мере три различных модели ПК. Вывести: Maker, число моделей ПК.
 
 Ответ:
+SELECT maker, COUNT(model) as count_model 
+FROM product WHERE type = 'pc' 
+GROUP BY maker 
+HAVING COUNT(DISTINCT model) >= 3
 
 Задание21: Найдите максимальную цену ПК, выпускаемых каждым производителем, у которого есть модели в таблице PC. Вывести: maker, максимальная цена.
 
 Ответ:
+SELECT DISTINCT product.maker, MAX(pc.price) 
+FROM product JOIN pc ON product.model = pc.model 
+WHERE product.type = 'pc' 
+GROUP BY product.maker
+
 
 Задание22: Для каждого значения скорости ПК, превышающего 600 МГц, определите среднюю цену ПК с такой же скоростью. Вывести: speed, средняя цена. 
 
 Ответ:
+SELECT speed, AVG(price) 
+FROM pc WHERE speed > 600 
+GROUP BY speed
 
 Задание23: Найдите производителей, которые производили бы как ПК
 со скоростью не менее 750 МГц, так и ПК-блокноты со скоростью не менее 750 МГц.
 Вывести: Maker
 
 Ответ:
+SELECT DISTINCT maker
+FROM product JOIN pc ON product.model = pc.model
+WHERE speed >= 750 AND maker 
+IN (SELECT maker FROM product 
+JOIN laptop ON product.model = laptop.model
+WHERE speed >= 750)
 
 Задание24: Перечислите номера моделей любых типов, имеющих самую высокую цену по всей имеющейся в базе данных продукции. 
 
 Ответ:
-
-Задание25: Найдите производителей принтеров, которые производят ПК с наименьшим объемом RAM и с самым быстрым процессором среди всех ПК, имеющих наименьший объем RAM. Вывести: Maker
-
-Ответ:
-
-Задание26: Найдите среднюю цену ПК и ПК-блокнотов, выпущенных производителем A (латинская буква). Вывести: одна общая средняя цена.
-
-Ответ:
+SELECT model
+FROM (SELECT model, price FROM pc
+UNION
+SELECT model, price FROM Laptop
+UNION 
+SELECT model, price
+FROM printer) as uniq_model
+WHERE price = (SELECT MAX(price)
+FROM (SELECT price FROM pc
+UNION 
+SELECT price FROM laptop
+UNION 
+SELECT price FROM printer) as max_price)
 
 Задание27: Найдите средний размер диска ПК каждого из тех производителей, которые выпускают и принтеры. Вывести: maker, средний размер HD.
 
 Ответ:
+SELECT product.maker, AVG(pc.hd)
+FROM pc, product 
+WHERE product.model = pc.model
+AND product.maker IN (SELECT DISTINCT maker
+FROM product
+WHERE product.type = 'printer')
+GROUP BY maker
 
 Задание28: Используя таблицу Product, определить количество производителей, выпускающих по одной модели.
 
 Ответ:
-
-Задание29: В предположении, что приход и расход денег на каждом пункте приема фиксируется не чаще одного раза в день [т.е. первичный ключ (пункт, дата)], написать запрос с выходными данными (пункт, дата, приход, расход). Использовать таблицы Income_o и Outcome_o. 
-
-Ответ:
-
-Задание30: В предположении, что приход и расход денег на каждом пункте приема фиксируется произвольное число раз (первичным ключом в таблицах является столбец code), требуется получить таблицу, в которой каждому пункту за каждую дату выполнения операций будет соответствовать одна строка.
-Вывод: point, date, суммарный расход пункта за день (out), суммарный приход пункта за день (inc). Отсутствующие значения считать неопределенными (NULL). 
-
-Ответ:
-
-
-
-
-
-
+SELECT COUNT(maker)
+FROM product
+WHERE maker IN
+(SELECT maker FROM product
+GROUP BY maker
+HAVING COUNT(model) = 1)
