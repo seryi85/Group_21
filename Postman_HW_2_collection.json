@@ -805,7 +805,7 @@
 							"});\r",
 							"pm.test(\"FAIL - значит тест работает. salary[2] > [1]\", function () {\r",
 							"    pm.expect(jsonData.salary[2] < jsonData.salary[1]).to.be.ok;\r",
-							"});"
+						"});"
 						],
 						"type": "text/javascript"
 					}
@@ -1426,7 +1426,7 @@
 							"\r",
 							"// Проверить что значение поля name = значению переменной name из окружения\r",
 							"\r",
-							"pm.environment.set(\"name\", pm.response.json().name);\r",
+							"pm.environment.set(\"name\", request.data.name);\r",
 							"\r",
 							"pm.test(\"value name = environment {{name}}\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
